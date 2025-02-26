@@ -21,5 +21,5 @@ export const authMiddleware: Middleware = async ({ req, pathname }) => {
     return session ? { redirect: "/" } : { continue: true };
   }
 
-  return session ? { continue: true } : { redirect: "/login" };
+  return session ? { continue: true } : { redirect: "/" };
 };

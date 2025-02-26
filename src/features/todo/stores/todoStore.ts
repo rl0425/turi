@@ -1,42 +1,78 @@
 import { create } from "zustand";
-import { Todo, TodoFilters } from "../types";
-import { supabase } from "@/features/shared/lib/supabase";
+import type { Todo, TodoFilters } from "../types";
 
 interface TodoState {
   todos: Todo[];
   filters: TodoFilters;
+  editingId: string | null;
 }
 
 interface TodoActions {
   setTodos: (todos: Todo[]) => void;
   setFilters: (filters: TodoFilters) => void;
-  addTodo: (content: string) => Promise<void>;
-  //   updateTodo: (id: string, updates: Partial<Todo>) => Promise<void>;
-  //   deleteTodo: (id: string) => Promise<void>;
+  addTodo: (content: string, days: number[]) => void;
+  updateTodo: (id: string, content: string, days: number[]) => void;
+  deleteTodo: (id: string) => void;
+  toggleEdit: (id: string | null) => void;
+  saveTodos: () => Promise<void>;
 }
 
 type TodoStore = TodoState & TodoActions;
 
-export const useTodoStore = create<TodoStore>((set) => ({
-  todos: [],
-  filters: {},
-  setTodos: (todos: Todo[]) => set({ todos }),
-  setFilters: (filters: TodoFilters) => set({ filters }),
-  addTodo: async (content: string) => {
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) {
-      throw new Error("User not found");
-    }
-    const newTodo: Partial<Todo> = {
-      content,
+export const useTodoStore = create<TodoStore>((set, get) => ({
+  todos: [
+    {
+      id: "1",
+      content: "밥 음팡지게 맛있게 호로록 먹기",
+      days: [1, 3, 5],
       isCompleted: false,
-      isDeleted: false,
-      userId: userData.user?.id,
-      createdAt: new Date().toISOString(),
-    };
+    },
+    {
+      id: "2",
+      content: "밥 음팡지게 맛있게 호로록 먹기",
+      days: [2, 4],
+      isCompleted: false,
+    },
+  ],
+  filters: {},
+  editingId: null,
 
-    set((state: TodoStore) => ({
-      todos: [...state.todos, newTodo as Todo],
+  setTodos: (todos) => set({ todos }),
+  setFilters: (filters) => set({ filters }),
+
+  addTodo: (content, days) => {
+    set((state) => ({
+      todos: [
+        ...state.todos,
+        {
+          id: Math.random().toString(36).substr(2, 9),
+          content,
+          days,
+          isCompleted: false,
+        },
+      ],
     }));
+  },
+
+  updateTodo: (id, content, days) => {
+    set((state) => ({
+      todos: state.todos.map((todo) =>
+        todo.id === id ? { ...todo, content, days } : todo
+      ),
+    }));
+  },
+
+  deleteTodo: (id) => {
+    set((state) => ({
+      todos: state.todos.filter((todo) => todo.id !== id),
+    }));
+  },
+
+  toggleEdit: (id) => {
+    set({ editingId: id });
+  },
+
+  saveTodos: async () => {
+    console.log("Todos saved:", get().todos);
   },
 }));
