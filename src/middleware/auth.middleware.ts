@@ -1,25 +1,18 @@
-import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
-import { NextResponse } from "next/server";
-import type { Middleware } from "./types";
+import { Middleware } from '@/features/shared/types/types';
+import { NextResponse } from 'next/server';
+import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
 
-// 임시로 any 사용
-type Database = any;
-
-const publicPaths = ["/login", "/register", "/forgot-password"];
-
-export const authMiddleware: Middleware = async ({ req, pathname }) => {
-  const supabase = createMiddlewareClient<Database>({
-    req,
-    res: NextResponse.next(),
-  });
+export const authMiddleware: Middleware = async ({ req }) => {
+  const res = NextResponse.next();
+  const supabase = createMiddlewareClient({ req, res });
 
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
-  if (publicPaths.includes(pathname)) {
-    return session ? { redirect: "/" } : { continue: true };
+  if (!session && !req.nextUrl.pathname.startsWith('/auth')) {
+    return { redirect: '/auth/login' };
   }
 
-  return session ? { continue: true } : { redirect: "/login" };
-};
+  return { continue: true };
+}; 
