@@ -2,8 +2,61 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 0, 0, 0;
+  --background-end-rgb: 0, 0, 0;
+}
+
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 커스텀 스크롤바 스타일 */
+@layer utilities {
+  /* 안정적인 스크롤바 스타일 */
+  .stable-scrollbar {
+    /* 항상 스크롤바 공간 확보 */
+    scrollbar-gutter: stable !important;
+    overflow-y: auto !important;
+    
+    /* Firefox 스크롤바 */
+    scrollbar-width: thin !important;
+    scrollbar-color: rgba(120, 120, 120, 0.3) transparent !important;
+  }
+  
+  .stable-scrollbar::-webkit-scrollbar {
+    width: 6px !important;
+  }
+  
+  .stable-scrollbar::-webkit-scrollbar-track {
+    background: transparent !important;
+  }
+  
+  .stable-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(120, 120, 120, 0.3) !important;
+    border-radius: 3px !important;
+    transition: background-color 0.3s ease !important;
+  }
+  
+  .stable-scrollbar:hover::-webkit-scrollbar-thumb {
+    background-color: rgba(120, 120, 120, 0.5) !important;
+  }
+  
+  /* 모든 컨텐츠가 같은 너비를 가지도록 컨테이너 패딩 추가 */
+  .content-container {
+    width: 100% !important;
+    padding-right: 6px !important; /* 스크롤바 너비만큼 패딩 */
+  }
 }
 
 @layer base {
@@ -52,7 +105,7 @@ body {
     --accent-foreground: 60 9.1% 97.8%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 60 9.1% 97.8%;
-    --border: 12 6.5% 15.1%;
+    --border: 0 1% 12%;
     --input: 12 6.5% 15.1%;
     --ring: 35.5 91.7% 32.9%;
     --chart-1: 220 70% 50%;

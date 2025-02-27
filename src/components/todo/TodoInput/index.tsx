@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 export const TodoInput = ({
   onSubmit,
   content: initialContent = "",
-  days: initialDays = [],
+  days: initialDays = [0, 1, 2, 3, 4, 5, 6],
   submitLabel = "추가",
   className,
 }: TodoInputProps) => {
@@ -40,7 +40,7 @@ export const TodoInput = ({
       await onSubmit(content.trim(), selectedDays);
       if (!initialContent) {
         setContent("");
-        setSelectedDays([]);
+        // setSelectedDays([]);
       }
       toast({
         title: `할 일이 ${submitLabel}되었습니다`,
@@ -57,14 +57,14 @@ export const TodoInput = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className={cn("flex flex-col gap-4 w-full", className)}
+      className={cn("flex flex-row items-center gap-4 w-full", className)}
     >
-      <div className="flex flex-col gap-3 w-full items-left border-2 border-[#292624] rounded-lg py-3 px-4">
+      <div className="flex flex-col gap-3 w-full items-left border border-border rounded-lg py-3 px-4">
         <Input
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="여기에 입력하세요!"
-          className="flex-1"
+          className="flex-1 focus-visible:ring-0"
         />
         <TodoDaySelector
           selectedDays={selectedDays}
@@ -72,7 +72,7 @@ export const TodoInput = ({
           className="mb-2"
         />
       </div>
-      <Button type="submit" className="w-full font-bold">
+      <Button type="submit" className="w-14 font-bold">
         {submitLabel}
       </Button>
     </form>

@@ -11,7 +11,7 @@ export interface TodoDay {
 }
 
 export interface TodoInputProps {
-  onSubmit: (content: string, days: TodoDay["key"][]) => Promise<void>;
+  onSubmit: (content: string, days: TodoDay["key"][]) => void;
   content?: string;
   days?: TodoDay["key"][];
   submitLabel?: string;
