@@ -11,7 +11,12 @@ interface TodoActions {
   setTodos: (todos: Todo[]) => void;
   setFilters: (filters: TodoFilters) => void;
   addTodo: (content: string, days: number[]) => void;
-  updateTodo: (id: string, content: string, days: number[]) => void;
+  updateTodo: (
+    id: string,
+    content: string,
+    days: number[],
+    isCompleted?: boolean
+  ) => void;
   deleteTodo: (id: string) => void;
   toggleEdit: (id: string | null) => void;
   saveTodos: () => Promise<void>;
@@ -54,10 +59,18 @@ export const useTodoStore = create<TodoStore>((set, get) => ({
     }));
   },
 
-  updateTodo: (id, content, days) => {
+  updateTodo: (id, content, days, isCompleted) => {
     set((state) => ({
       todos: state.todos.map((todo) =>
-        todo.id === id ? { ...todo, content, days } : todo
+        todo.id === id
+          ? {
+              ...todo,
+              content: content !== undefined ? content : todo.content,
+              days: days !== undefined ? days : todo.days,
+              isCompleted:
+                isCompleted !== undefined ? isCompleted : todo.isCompleted,
+            }
+          : todo
       ),
     }));
   },

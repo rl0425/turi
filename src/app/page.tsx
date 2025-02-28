@@ -23,7 +23,7 @@ const Home = () => {
           className="mt-8 px-6 py-3 bg-yellow-400 text-black rounded-lg font-semibold hover:bg-yellow-500"
           onClick={() => router.push("/setup")}
         >
-          할 일을 추가해보세요! +
+          할 일을 추가해요! +
         </Button>
       </motion.div>
     </RouteGuard>

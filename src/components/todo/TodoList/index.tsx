@@ -1,74 +1,79 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTodoStore } from "@/features/todo/stores/todoStore";
-import { TodoInput } from "../TodoInput";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { TodoDay } from "@/features/todo/types";
-import { useCallback, memo } from "react";
+import { Button } from "@/components/ui/button";
+import { CalendarDaysIcon } from "lucide-react";
+import { DaySelector } from "../DaySelector";
+import { TodoItem } from "../TodoItem";
+import { TODO_LIST_CONSTANTS } from "../constants";
 
-interface TodoItemProps {
-  todo: {
-    id: string;
-    content: string;
-    days: number[] | TodoDay["key"][];
-  };
-  editingId: string | null;
-  onEdit: (id: string, content: string, days: number[]) => Promise<void>;
-  onToggleEdit: (id: string) => void;
-  onDelete: (id: string) => void;
+interface TodoListProps {
+  isEditMode: boolean;
 }
 
-const TodoItem = memo(
-  ({ todo, editingId, onEdit, onToggleEdit, onDelete }: TodoItemProps) => {
-    const isEditing = editingId === todo.id;
-
-    return (
-      <div className="flex items-center gap-4 p-4 bg-black border border-border rounded-lg">
-        {isEditing ? (
-          <>
-            <TodoInput
-              content={todo.content}
-              days={todo.days as TodoDay["key"][]}
-              onSubmit={(content, days) => onEdit(todo.id, content, days)}
-              submitLabel="수정"
-              className="flex-1"
-            />
-            {/* <span className="text-yellow-400">수정중...</span> */}
-          </>
-        ) : (
-          <>
-            <span className="flex-1">{todo.content}</span>
-            <div className="flex gap-1">
-              <Button
-                variant="ghost"
-                onClick={() => onToggleEdit(todo.id)}
-                className="text-yellow-400"
-                aria-label="할일 수정"
-              >
-                수정
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => onDelete(todo.id)}
-                className="text-yellow-400"
-                aria-label="할일 삭제"
-              >
-                삭제
-              </Button>
-            </div>
-          </>
-        )}
-      </div>
-    );
-  }
-);
-
-TodoItem.displayName = "TodoItem";
-
-export const TodoList = () => {
+/**
+ * 할일 목록 컴포넌트
+ * @param {object} props
+ * @param {boolean} props.isEditMode
+ */
+export const TodoList = ({ isEditMode }: TodoListProps) => {
   const { todos, editingId, updateTodo, deleteTodo, toggleEdit, saveTodos } =
     useTodoStore();
   const { toast } = useToast();
+  const listRef = useRef<HTMLDivElement>(null);
+  const prevTodosLength = useRef(todos.length);
 
+  // 현재 날짜 관련 상태
+  const [selectedDay, setSelectedDay] = useState<number>(() => {
+    const today = new Date();
+    return (today.getDay() + 6) % 7; // 0:월요일, 1:화요일, ..., 6:일요일로 변환
+  });
+
+  // 오늘 날짜인지 확인
+  const isToday = useMemo(() => {
+    const today = new Date();
+    return selectedDay === (today.getDay() + 6) % 7;
+  }, [selectedDay]);
+
+  // 선택된 날짜에 맞는 할일 필터링
+  const filteredTodos = useMemo(() => {
+    return todos.filter((todo) => {
+      // 모든 요일에 표시되어야 하는 경우
+      if (!todo.days || todo.days.length === 0) return true;
+
+      // 선택된 요일에 해당하는 할일만 표시
+      return todo.days.includes(selectedDay);
+    });
+  }, [todos, selectedDay]);
+
+  // 할일 목록이 변경되었을 때 스크롤을 부드럽게 가장 아래로 이동
+  useEffect(() => {
+    if (todos.length > prevTodosLength.current && listRef.current) {
+      setTimeout(() => {
+        if (listRef.current) {
+          listRef.current.scrollTo({
+            top: listRef.current.scrollHeight,
+            behavior: "smooth",
+          });
+        }
+      }, 100);
+    }
+
+    prevTodosLength.current = todos.length;
+  }, [todos.length]);
+
+  // 요일 선택 핸들러
+  const handleSelectDay = useCallback((day: number) => {
+    setSelectedDay(day);
+  }, []);
+
+  // 오늘로 돌아가기 핸들러
+  const handleReturnToday = useCallback(() => {
+    const today = new Date();
+    setSelectedDay((today.getDay() + 6) % 7);
+  }, []);
+
+  // 할일 편집 핸들러
   const handleEdit = useCallback(
     async (id: string, content: string, days: number[]) => {
       await updateTodo(id, content, days);
@@ -77,6 +82,7 @@ export const TodoList = () => {
     [updateTodo, toggleEdit]
   );
 
+  // 편집 모드 토글 핸들러
   const handleToggleEdit = useCallback(
     (id: string) => {
       toggleEdit(id);
@@ -84,6 +90,7 @@ export const TodoList = () => {
     [toggleEdit]
   );
 
+  // 할일 삭제 핸들러
   const handleDelete = useCallback(
     (id: string) => {
       deleteTodo(id);
@@ -91,59 +98,118 @@ export const TodoList = () => {
     [deleteTodo]
   );
 
+  // 할일 완료 상태 토글 핸들러
+  const handleToggleComplete = useCallback(
+    (id: string) => {
+      const todo = todos.find((t) => t.id === id);
+      if (todo) {
+        updateTodo(id, todo.content, todo.days, !todo.isCompleted);
+      }
+    },
+    [todos, updateTodo]
+  );
+
+  // 할일 저장 핸들러
   const handleSave = useCallback(async () => {
     try {
       await saveTodos();
       toast({
-        title: "모든 변경사항이 저장되었습니다",
+        title: TODO_LIST_CONSTANTS.MESSAGES.TOAST.SAVE_SUCCESS,
         variant: "default",
       });
     } catch (error) {
       console.error("Todo 저장 실패:", error);
       toast({
-        title: "저장에 실패했습니다",
-        description: "다시 시도해주세요",
+        title: TODO_LIST_CONSTANTS.MESSAGES.TOAST.SAVE_ERROR,
+        description: TODO_LIST_CONSTANTS.MESSAGES.TOAST.SAVE_ERROR_DETAIL,
         variant: "destructive",
       });
     }
   }, [saveTodos, toast]);
 
-  if (todos.length === 0) {
+  // 할일이 없을 때 표시할 내용
+  if (filteredTodos.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-gray-400 min-h-[300px]">
-        <p>등록된 할일이 없습니다.</p>
-        <p className="mt-2 text-sm">새로운 할일을 추가해보세요!</p>
+      <div className="flex flex-col h-full">
+        {/* "오늘로 돌아가기" 버튼 - 오늘이 아닌 날짜를 볼 때만 표시 */}
+        {!isToday && (
+          <Button
+            variant="ghost"
+            onClick={handleReturnToday}
+            className="flex items-center gap-2 text-yellow-400 hover:text-yellow-300 self-start mb-2"
+            aria-label={TODO_LIST_CONSTANTS.ARIA.RETURN_TODAY}
+          >
+            <CalendarDaysIcon className="w-4 h-4" />
+            <span>{TODO_LIST_CONSTANTS.MESSAGES.RETURN_TODAY}</span>
+          </Button>
+        )}
+
+        <div className={TODO_LIST_CONSTANTS.STYLES.EMPTY_CONTAINER}>
+          <p>{TODO_LIST_CONSTANTS.MESSAGES.EMPTY.MAIN}</p>
+          <p className="mt-2 text-sm">
+            {TODO_LIST_CONSTANTS.MESSAGES.EMPTY.SUB}
+          </p>
+        </div>
+
+        {/* 요일 선택기 */}
+        <DaySelector selectedDay={selectedDay} onSelectDay={handleSelectDay} />
       </div>
     );
   }
 
   return (
-    <div
-      className="flex flex-col w-full h-full"
-      aria-label="할일 목록"
-      role="list"
-    >
-      <div className="flex-1 max-h-[70vh] md:max-h-[400px] stable-scrollbar">
-        <div className="flex flex-col gap-4 content-container">
-          {todos.map((todo) => (
-            <TodoItem
-              key={todo.id}
-              todo={todo}
-              editingId={editingId}
-              onEdit={handleEdit}
-              onToggleEdit={handleToggleEdit}
-              onDelete={handleDelete}
-            />
-          ))}
-        </div>
-      </div>
-      <Button
-        onClick={handleSave}
-        className="mt-4 w-full md:w-auto ml-auto"
-        aria-label="모든 변경사항 저장"
+    <div className="flex flex-col h-full">
+      {/* "오늘로 돌아가기" 버튼 - 오늘이 아닌 날짜를 볼 때만 표시 */}
+      {!isToday && (
+        <Button
+          variant="ghost"
+          onClick={handleReturnToday}
+          className="flex items-center gap-2 text-yellow-400 hover:text-yellow-300 self-start mb-2"
+          aria-label={TODO_LIST_CONSTANTS.ARIA.RETURN_TODAY}
+        >
+          <CalendarDaysIcon className="w-4 h-4" />
+          <span>{TODO_LIST_CONSTANTS.MESSAGES.RETURN_TODAY}</span>
+        </Button>
+      )}
+
+      <div
+        className={TODO_LIST_CONSTANTS.STYLES.LIST_CONTAINER}
+        aria-label={TODO_LIST_CONSTANTS.ARIA.LIST}
+        role="list"
       >
-        모든 변경사항 저장
-      </Button>
+        <div
+          className={`${TODO_LIST_CONSTANTS.STYLES.LIST_CONTENT} scroll-smooth`}
+          ref={listRef}
+        >
+          <div className={TODO_LIST_CONSTANTS.STYLES.ITEMS_CONTAINER}>
+            {filteredTodos.map((todo) => (
+              <TodoItem
+                key={todo.id}
+                todo={todo}
+                editingId={editingId}
+                isEditMode={isEditMode}
+                onEdit={handleEdit}
+                onToggleEdit={handleToggleEdit}
+                onDelete={handleDelete}
+                onToggleComplete={handleToggleComplete}
+              />
+            ))}
+          </div>
+        </div>
+
+        {isEditMode && (
+          <Button
+            onClick={handleSave}
+            className="mt-4 md:w-auto ml-auto"
+            aria-label={TODO_LIST_CONSTANTS.ARIA.SAVE_ALL}
+          >
+            {TODO_LIST_CONSTANTS.BUTTONS.SAVE_ALL}
+          </Button>
+        )}
+      </div>
+
+      {/* 요일 선택기 */}
+      <DaySelector selectedDay={selectedDay} onSelectDay={handleSelectDay} />
     </div>
   );
 };
