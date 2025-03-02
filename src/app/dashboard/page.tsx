@@ -9,7 +9,6 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { RouteGuard } from "@/components/common/RouteGuard";
 import { WeeklyProgress } from "@/components/todo/WeeklyProgress";
-import { WeeklyCalendar } from "@/components/todo/WeeklyCalendar";
 import { PencilIcon, CheckIcon } from "lucide-react";
 
 const DASHBOARD_CONSTANTS = {
@@ -73,15 +72,7 @@ const DashboardPage = () => {
         {...pageAnimationProps}
         className="min-h-screen px-[5%] md:px-[20%] flex items-center justify-center flex-col bg-black text-white p-4"
       >
-        {/* <div className="w-full flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold">
-            <span className="text-yellow-400">
-              {DASHBOARD_CONSTANTS.TITLE.HIGHLIGHT}
-            </span>
-            {DASHBOARD_CONSTANTS.TITLE.NORMAL}
-          </h1>
-        </div> */}
-        <WeeklyProgress className="mb-8 w-full" />
+        <WeeklyProgress className="mb-1 w-full" />
         <div className="flex justify-end w-full">
           <Button
             onClick={toggleEditMode}
@@ -105,8 +96,7 @@ const DashboardPage = () => {
             <TodoList isEditMode={isEditMode} />
           )}
 
-          {!isEditMode && <WeeklyCalendar className="mt-8 w-full" />}
-
+          {/* {!isEditMode && <WeeklyCalendar className="mt-8 w-full" />} */}
           {/* 개발용 테스트 버튼 */}
           <Button
             onClick={() => resetSetup()}

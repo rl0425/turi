@@ -1,19 +1,20 @@
 import { memo, useCallback } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
 import { PencilIcon, TrashIcon } from "lucide-react";
 import { Todo } from "@/features/todo/types";
 import { TODO_LIST_CONSTANTS } from "../constants";
 import { cn } from "@/lib/utils";
+import { TodoInput } from "../TodoInput";
 
 interface TodoItemProps {
   todo: Todo;
   editingId: string | null;
   isEditMode: boolean;
+  selectedDay: number;
   onEdit: (id: string, content: string, days: number[]) => void;
   onToggleEdit: (id: string) => void;
   onDelete: (id: string) => void;
-  onToggleComplete: (id: string) => void;
+  onToggleComplete: (id: string, day: number) => void;
 }
 
 /**
@@ -22,6 +23,7 @@ interface TodoItemProps {
  * @param {Todo} props.todo 할일 객체
  * @param {string | null} props.editingId 현재 편집 중인 할일 ID
  * @param {boolean} props.isEditMode 편집 모드 여부
+ * @param {number} props.selectedDay 선택된 요일
  * @param {function} props.onEdit 할일 편집 핸들러
  * @param {function} props.onToggleEdit 편집 모드 토글 핸들러
  * @param {function} props.onDelete 할일 삭제 핸들러
@@ -32,6 +34,7 @@ export const TodoItem = memo(
     todo,
     editingId,
     isEditMode,
+    selectedDay,
     onEdit,
     onToggleEdit,
     onDelete,
@@ -39,26 +42,33 @@ export const TodoItem = memo(
   }: TodoItemProps) => {
     const isEditing = editingId === todo.id;
 
+    // 현재 선택된 요일에 대한 완료 상태 확인
+    const isCompletedForDay =
+      todo.completedDays?.includes(selectedDay) || false;
+
     const contentClassName = cn(
       TODO_LIST_CONSTANTS.STYLES.ITEM_CONTENT,
-      todo.isCompleted && TODO_LIST_CONSTANTS.STYLES.ITEM_COMPLETED
+      isCompletedForDay && TODO_LIST_CONSTANTS.STYLES.ITEM_COMPLETED
     );
 
-    const handleContentEdit = useCallback(
-      (e: React.ChangeEvent<HTMLInputElement>) => {
-        onEdit(todo.id, e.target.value, todo.days);
+    const handleEditSubmit = useCallback(
+      (content: string, days: number[]) => {
+        onEdit(todo.id, content, days);
+        onToggleEdit("");
+        return Promise.resolve();
       },
-      [onEdit, todo.id, todo.days]
+      [onEdit, onToggleEdit, todo.id]
     );
 
     const itemContent = useCallback(() => {
       if (isEditing) {
         return (
-          <Input
-            value={todo.content}
-            onChange={handleContentEdit}
-            autoFocus
-            className="flex-1"
+          <TodoInput
+            content={todo.content}
+            days={todo.days as (0 | 1 | 2 | 3 | 4 | 5 | 6)[]}
+            onSubmit={handleEditSubmit}
+            submitLabel="수정"
+            className="w-full"
           />
         );
       }
@@ -85,9 +95,9 @@ export const TodoItem = memo(
             </div>
           ) : (
             <Checkbox
-              checked={todo.isCompleted}
-              onCheckedChange={() => onToggleComplete(todo.id)}
-              aria-label={`할일 ${todo.isCompleted ? "완료 취소" : "완료"}`}
+              checked={isCompletedForDay}
+              onCheckedChange={() => onToggleComplete(todo.id, selectedDay)}
+              aria-label={`할일 ${isCompletedForDay ? "완료 취소" : "완료"}`}
               iconSize="5"
               className="ml-2 flex-shrink-0 w-6 h-6"
             />
@@ -99,7 +109,9 @@ export const TodoItem = memo(
       isEditMode,
       todo,
       contentClassName,
-      handleContentEdit,
+      isCompletedForDay,
+      selectedDay,
+      handleEditSubmit,
       onToggleEdit,
       onDelete,
       onToggleComplete,

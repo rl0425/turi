@@ -1,7 +1,7 @@
 export const TODO_LIST_CONSTANTS = {
   MESSAGES: {
     EMPTY: {
-      MAIN: "할 일이 없습니다.",
+      MAIN: "오늘은 할 일이 없네요!",
       SUB: "새로운 할 일을 추가해보세요.",
     },
     TOAST: {
@@ -17,8 +17,8 @@ export const TODO_LIST_CONSTANTS = {
   },
   STYLES: {
     EMPTY_CONTAINER:
-      "flex flex-col items-center justify-center h-full text-gray-400 py-8",
-    LIST_CONTAINER: "flex flex-col h-full",
+      "flex flex-col items-center justify-center h-[66px] text-gray-400 py-8",
+    LIST_CONTAINER: "flex flex-col h-[40vh]",
     LIST_CONTENT: "flex-1 overflow-auto px-1 py-2",
     ITEMS_CONTAINER: "space-y-2",
     ITEM_CONTAINER:
@@ -27,6 +27,9 @@ export const TODO_LIST_CONSTANTS = {
     ITEM_COMPLETED: "line-through text-gray-400",
     BUTTON_EDIT: "p-1 text-gray-400 hover:text-primary",
     BUTTON_DELETE: "p-1 text-gray-400 hover:text-red-500 ml-1",
+    TODAY_BUTTON:
+      "flex items-center gap-2 text-yellow-400 hover:text-yellow-300 self-auto p-4 mx-2",
+    SAVE_BUTTON: "mt-4 md:w-auto ml-auto",
   },
   ARIA: {
     LIST: "할 일 목록",
