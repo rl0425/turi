@@ -28,7 +28,7 @@ const SetupPage = () => {
         </h1>
         <div className="flex flex-col gap-5 w-full">
           <TodoInput onSubmit={addTodo} />
-          <TodoList />
+          <TodoList isEditMode={false} />
           <Button
             onClick={handleCompleteSetup}
             disabled={isUpdating}

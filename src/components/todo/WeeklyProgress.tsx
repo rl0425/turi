@@ -105,9 +105,32 @@ export const WeeklyProgress = ({ className }: WeeklyProgressProps) => {
   const todos = useTodoStore((state) => state.todos);
 
   const completionRatio = useMemo(() => {
-    const completedCount = todos.filter((todo) => todo.isCompleted).length;
-    const totalCount = todos.length;
-    return totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+    // 모든 투두 항목의 전체 일수 계산 (각 투두 항목이 해당하는 요일 수)
+    let totalDaysCount = 0;
+    // 모든 투두 항목의 완료된 일수 계산
+    let completedDaysCount = 0;
+
+    todos.forEach((todo) => {
+      // days 배열이 있는 경우만 계산에 포함
+      if (todo.days && todo.days.length > 0) {
+        // 투두 항목이 적용되는 총 요일 수
+        totalDaysCount += todo.days.length;
+
+        // completedDays 배열이 있는 경우 완료된 요일 수 계산
+        if (todo.completedDays && todo.completedDays.length > 0) {
+          // todo.days에 포함된 날짜 중 completedDays에도 있는 날짜만 계산
+          const completedDaysInSchedule = todo.completedDays.filter((day) =>
+            todo.days.includes(day)
+          ).length;
+
+          completedDaysCount += completedDaysInSchedule;
+        }
+      }
+    });
+
+    return totalDaysCount > 0
+      ? Math.round((completedDaysCount / totalDaysCount) * 100)
+      : 0;
   }, [todos]);
 
   const displayProgress = useMemo(() => {

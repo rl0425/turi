@@ -67,7 +67,6 @@ export const TodoList = ({ isEditMode }: TodoListProps) => {
 
   const handleEdit = useCallback(
     async (id: string, content: Partial<Omit<Todo, "id">>, days: number[]) => {
-      console.log("content =", content);
       await updateTodo(
         id,
         { title: content.title, days: content.days },
@@ -95,12 +94,8 @@ export const TodoList = ({ isEditMode }: TodoListProps) => {
   const handleToggleComplete = useCallback(
     (id: string, day: number) => {
       const todo = todos.find((t) => t.id === id);
-      console.log(todo);
-      console.log(id);
-      console.log(day);
       if (todo) {
         const completedDays = todo.completedDays;
-        console.log(completedDays);
         const isCompleted = completedDays.includes(day);
         const newCompletedDays = isCompleted
           ? completedDays.filter((d) => d !== day)

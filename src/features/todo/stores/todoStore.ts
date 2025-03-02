@@ -72,7 +72,6 @@ export const useTodoStore = create<TodoStore>((set, get) => ({
     set((state) => {
       const todoIndex = state.todos.findIndex((todo) => todo.id === id);
       if (todoIndex !== -1) {
-        console.log("updates =", updates);
         const updatedTodos = [...state.todos];
         updatedTodos[todoIndex] = {
           ...updatedTodos[todoIndex],

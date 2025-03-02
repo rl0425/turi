@@ -18,7 +18,7 @@ export const TODO_LIST_CONSTANTS = {
   STYLES: {
     EMPTY_CONTAINER:
       "flex flex-col items-center justify-center h-[66px] text-gray-400 py-8",
-    LIST_CONTAINER: "flex flex-col h-[40vh]",
+    LIST_CONTAINER: "flex flex-col max-h-[40vh]",
     LIST_CONTENT: "flex-1 overflow-auto px-1 py-2",
     ITEMS_CONTAINER: "space-y-2",
     ITEM_CONTAINER:

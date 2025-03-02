@@ -6,7 +6,6 @@
 
 // const Page = () => {
 //   const { handleSubmit } = useTodoInput();
-//   console.log("123");
 
 //   return (
 //     <motion.div
