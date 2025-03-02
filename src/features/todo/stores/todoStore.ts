@@ -13,9 +13,8 @@ interface TodoActions {
   addTodo: (content: string, days: number[]) => void;
   updateTodo: (
     id: string,
-    content: string,
-    days: number[],
-    isCompleted?: boolean
+    updates: Partial<Omit<Todo, "id">>,
+    completedDays?: number[]
   ) => void;
   deleteTodo: (id: string) => void;
   toggleEdit: (id: string | null) => void;
@@ -28,15 +27,21 @@ export const useTodoStore = create<TodoStore>((set, get) => ({
   todos: [
     {
       id: "1",
-      content: "밥 음팡지게 맛있게 호로록 먹기",
+      title: "밥 음팡지게 맛있게 호로록 먹기",
       days: [1, 3, 5],
-      isCompleted: false,
+      description: "asdasdsadas",
+      dueDate: undefined,
+      completed: false,
+      completedDays: [],
     },
     {
       id: "2",
-      content: "밥 음팡지게 맛있게 호로록 먹기",
+      title: "밥 음팡지게 맛있게 호로록 먹기",
       days: [2, 4],
-      isCompleted: false,
+      description: "",
+      dueDate: undefined,
+      completed: false,
+      completedDays: [],
     },
   ],
   filters: {},
@@ -51,28 +56,37 @@ export const useTodoStore = create<TodoStore>((set, get) => ({
         ...state.todos,
         {
           id: Math.random().toString(36).substr(2, 9),
-          content,
+          title: content,
           days,
-          isCompleted: false,
+          description: "",
+          dueDate: undefined,
+          completed: false,
+          completedDays: [],
+          createdAt: new Date(),
         },
       ],
     }));
   },
 
-  updateTodo: (id, content, days, isCompleted) => {
-    set((state) => ({
-      todos: state.todos.map((todo) =>
-        todo.id === id
-          ? {
-              ...todo,
-              content: content !== undefined ? content : todo.content,
-              days: days !== undefined ? days : todo.days,
-              isCompleted:
-                isCompleted !== undefined ? isCompleted : todo.isCompleted,
-            }
-          : todo
-      ),
-    }));
+  updateTodo: (id, updates, completedDays) => {
+    set((state) => {
+      const todoIndex = state.todos.findIndex((todo) => todo.id === id);
+      if (todoIndex !== -1) {
+        console.log("updates =", updates);
+        const updatedTodos = [...state.todos];
+        updatedTodos[todoIndex] = {
+          ...updatedTodos[todoIndex],
+          ...updates,
+        };
+        
+        if (completedDays !== undefined) {
+          updatedTodos[todoIndex].completedDays = completedDays;
+        }
+        
+        return { todos: updatedTodos };
+      }
+      return state;
+    });
   },
 
   deleteTodo: (id) => {

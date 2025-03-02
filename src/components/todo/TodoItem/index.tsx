@@ -11,7 +11,11 @@ interface TodoItemProps {
   editingId: string | null;
   isEditMode: boolean;
   selectedDay: number;
-  onEdit: (id: string, content: string, days: number[]) => void;
+  onEdit: (
+    id: string,
+    content: Partial<Omit<Todo, "id">>,
+    days: number[]
+  ) => void;
   onToggleEdit: (id: string) => void;
   onDelete: (id: string) => void;
   onToggleComplete: (id: string, day: number) => void;
@@ -20,14 +24,14 @@ interface TodoItemProps {
 /**
  * 할일 항목 컴포넌트
  * @param {object} props
- * @param {Todo} props.todo 할일 객체
- * @param {string | null} props.editingId 현재 편집 중인 할일 ID
- * @param {boolean} props.isEditMode 편집 모드 여부
- * @param {number} props.selectedDay 선택된 요일
- * @param {function} props.onEdit 할일 편집 핸들러
- * @param {function} props.onToggleEdit 편집 모드 토글 핸들러
- * @param {function} props.onDelete 할일 삭제 핸들러
- * @param {function} props.onToggleComplete 할일 완료 상태 토글 핸들러
+ * @param {Todo} props.todo
+ * @param {string | null} props.editingId
+ * @param {boolean} props.isEditMode
+ * @param {number} props.selectedDay
+ * @param {function} props.onEdit
+ * @param {function} props.onToggleEdit
+ * @param {function} props.onDelete
+ * @param {function} props.onToggleComplete
  */
 export const TodoItem = memo(
   ({
@@ -42,7 +46,6 @@ export const TodoItem = memo(
   }: TodoItemProps) => {
     const isEditing = editingId === todo.id;
 
-    // 현재 선택된 요일에 대한 완료 상태 확인
     const isCompletedForDay =
       todo.completedDays?.includes(selectedDay) || false;
 
@@ -53,7 +56,7 @@ export const TodoItem = memo(
 
     const handleEditSubmit = useCallback(
       (content: string, days: number[]) => {
-        onEdit(todo.id, content, days);
+        onEdit(todo.id, { title: content, days }, days);
         onToggleEdit("");
         return Promise.resolve();
       },
@@ -64,7 +67,7 @@ export const TodoItem = memo(
       if (isEditing) {
         return (
           <TodoInput
-            content={todo.content}
+            content={todo.title}
             days={todo.days as (0 | 1 | 2 | 3 | 4 | 5 | 6)[]}
             onSubmit={handleEditSubmit}
             submitLabel="수정"
@@ -75,7 +78,7 @@ export const TodoItem = memo(
 
       return (
         <>
-          <div className={contentClassName}>{todo.content}</div>
+          <div className={contentClassName}>{todo.title}</div>
           {isEditMode ? (
             <div className="flex items-center">
               <button

@@ -1,8 +1,11 @@
 export interface Todo {
   id: string;
-  content: string;
+  title: string;
   days: number[];
-  isCompleted: boolean;
+  description: string;
+  dueDate?: Date;
+  completed: boolean;
+  completedDays: number[];
 }
 
 export interface TodoDay {
@@ -28,3 +31,4 @@ export interface TodoFilters {
   isCompleted?: boolean;
   priority?: string;
 }
+
